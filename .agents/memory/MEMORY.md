@@ -1,0 +1,1 @@
+- [Workspace package installation](workspace-package-install.md) — declare package-local dependencies first; then run root pnpm install.

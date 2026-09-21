@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "YouTube Knowledge + Content"
+description = "A polished personal AI tool that turns public YouTube transcripts into concise summaries, structured notes, key takeaways, and original social content ideas using the free Groq API."
+version = "1.0.0"
+id = "artifacts/youtube-knowledge"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21429
+
+[services.development]
+run = "pnpm --filter @workspace/youtube-knowledge run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/youtube-knowledge", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/youtube-knowledge/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21429"
+BASE_PATH = "/"

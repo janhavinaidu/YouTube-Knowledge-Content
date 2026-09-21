@@ -1,44 +1,56 @@
-# [Project name]
+# YouTube Knowledge + Content
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Turn public YouTube transcripts into structured notes and original content ideas with Groq.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server
+- `pnpm --filter @workspace/youtube-knowledge run dev` — run the web app
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required secret: `GROQ_API_KEY`
+- Optional env: `GROQ_MODEL` (defaults to `llama-3.1-8b-instant`)
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Web: React + Vite
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
+- Transcript retrieval: `youtube-transcript`
+- AI: Groq OpenAI-compatible API
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Build: Vite + esbuild
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/youtube-knowledge/src/App.tsx` — main single-route experience
+- `artifacts/youtube-knowledge/src/index.css` — theme, typography, texture, and motion
+- `artifacts/api-server/src/routes/analyze.ts` — analysis endpoint
+- `artifacts/api-server/src/lib/youtube.ts` — URL parsing, metadata, and transcript retrieval
+- `artifacts/api-server/src/lib/ai.ts` — bounded transcript prompt and Groq response validation
+- `lib/api-spec/openapi.yaml` — source-of-truth API contract
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The app intentionally has no database or user accounts; it is a single focused workflow.
+- Groq is called only from the server so the browser never receives the API key.
+- Transcript length is bounded before model submission so large videos do not create unbounded requests.
+- The model response is parsed and validated against the generated OpenAPI schema before it reaches the UI.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Users paste a public YouTube URL and receive a summary, takeaways, structured notes, and exactly five original content ideas with hooks, formats, and explanations. Results can be copied section-by-section.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Keep the application free to run by using the Groq free tier and avoiding paid automation platforms.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Add `GROQ_API_KEY` as a secret before using the Generate action.
+- Some YouTube videos do not expose transcripts; the API returns a friendly 400 response instead of a stack trace.
 
 ## Pointers
 

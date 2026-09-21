@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: analysis
+    description: YouTube transcript analysis
 paths:
   /healthz:
     get:
@@ -24,6 +26,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /analyze:
+    post:
+      operationId: analyzeYoutubeVideo
+      tags: [analysis]
+      summary: Analyze a public YouTube video
+      description: Retrieves a public transcript and turns it into structured knowledge and original content ideas with Groq.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeVideoInput"
+      responses:
+        "200":
+          description: Generated analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzeVideoResponse"
+        "400":
+          description: Invalid URL or unavailable transcript
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: AI provider unavailable or not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +66,103 @@ components:
           type: string
       required:
         - status
+    AnalyzeVideoInput:
+      type: object
+      properties:
+        url:
+          type: string
+          minLength: 1
+          description: A public YouTube watch or short URL
+      required:
+        - url
+    StructuredNote:
+      type: object
+      properties:
+        heading:
+          type: string
+        points:
+          type: array
+          items:
+            type: string
+      required:
+        - heading
+        - points
+    ContentIdea:
+      type: object
+      properties:
+        title:
+          type: string
+        hook:
+          type: string
+        format:
+          type: string
+        explanation:
+          type: string
+      required:
+        - title
+        - hook
+        - format
+        - explanation
+    VideoMetadata:
+      type: object
+      properties:
+        video_id:
+          type: string
+        title:
+          type: ["string", "null"]
+        channel:
+          type: ["string", "null"]
+        duration:
+          type: ["string", "null"]
+        thumbnail_url:
+          type: ["string", "null"]
+      required:
+        - video_id
+        - title
+        - channel
+        - duration
+        - thumbnail_url
+    AnalyzeVideoResponse:
+      type: object
+      properties:
+        video:
+          $ref: "#/components/schemas/VideoMetadata"
+        summary:
+          type: string
+        key_takeaways:
+          type: array
+          items:
+            type: string
+        structured_notes:
+          type: array
+          items:
+            $ref: "#/components/schemas/StructuredNote"
+        content_ideas:
+          type: array
+          minItems: 5
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/ContentIdea"
+        transcript_word_count:
+          type: integer
+        transcript_truncated:
+          type: boolean
+      required:
+        - video
+        - summary
+        - key_takeaways
+        - structured_notes
+        - content_ideas
+        - transcript_word_count
+        - transcript_truncated
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+      required:
+        - error
+        - code
 
