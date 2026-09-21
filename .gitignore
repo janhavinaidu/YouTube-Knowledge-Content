@@ -49,6 +49,7 @@ Thumbs.db
 .local/
 
 # Secrets and Python artifacts
-.env
+.env*
+*.env
 __pycache__/
 *.pyc

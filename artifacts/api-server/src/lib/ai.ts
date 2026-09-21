@@ -49,7 +49,7 @@ export async function generateAnalysis(
   }
 
   const prepared = prepareTranscript(transcript);
-  const model = process.env.GROQ_MODEL ?? "llama-3.1-8b-instant";
+  const model = process.env.GROQ_MODEL ?? "groq/compound-mini";
 
   const systemPrompt = `You are an expert research assistant and content strategist.
 
@@ -103,10 +103,12 @@ Generate exactly 5 content ideas. They must be inspired by the transcript's conc
   }
 
   if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Groq API Error Response:", response.status, errorText);
     throw new AiProviderError(
       response.status === 429
         ? "Groq's free-tier rate limit was reached. Please wait a moment and try again."
-        : "Groq could not complete the analysis. Please try again.",
+        : `Groq error (${response.status}): ${errorText}`,
     );
   }
 
