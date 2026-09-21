@@ -1,0 +1,212 @@
+Build a polished web application called **“YouTube → Knowledge + Content”**.
+
+The app should take a public YouTube video URL and turn the video's transcript into:
+
+1. A concise summary
+2. Structured notes
+3. Key takeaways
+4. 5 practical content ideas based on the video
+5. A hook for each content idea
+6. A suggested content format for each idea (Reel, Carousel, LinkedIn post, X/Twitter thread, etc.)
+
+### Goal
+
+This is a personal AI automation project and will also be demonstrated in a short social-media Reel.
+
+The core workflow is:
+
+YouTube URL
+→ retrieve transcript
+→ clean and process transcript
+→ send transcript to an AI model
+→ generate structured knowledge + content ideas
+→ display the results in a polished UI
+
+### Tech stack
+
+Use:
+
+* Python
+* Streamlit
+* YouTube transcript extraction library/API that works with public YouTube videos
+* An LLM API configured through environment variables
+* python-dotenv if appropriate
+
+Keep the code modular and easy to understand.
+
+Do NOT use a paid automation platform such as n8n.
+
+### UI
+
+Create a modern, clean, minimal interface.
+
+Header:
+
+“🎥 YouTube → Knowledge + Content”
+
+Subtitle:
+
+“Turn any YouTube video into structured notes and content ideas.”
+
+Main input:
+
+“Paste a YouTube URL”
+
+with a text input and a prominent:
+
+“✨ Generate”
+
+button.
+
+After processing, display the result in separate visually distinct sections:
+
+### 📝 Summary
+
+A concise 5–8 sentence summary.
+
+### 💡 Key Takeaways
+
+5–8 important insights from the video.
+
+### 📚 Structured Notes
+
+Organize the notes into logical sections based on the video's topics.
+
+### 📱 Content Ideas
+
+Generate exactly 5 content ideas inspired by the video's concepts.
+
+For each content idea show:
+
+* Title
+* Hook
+* Format
+* Short explanation
+
+Example:
+
+Idea:
+“AI Agents vs Chatbots”
+
+Hook:
+“AI agents aren't just chatbots. Here's the difference.”
+
+Format:
+Instagram Reel
+
+Explanation:
+A short educational Reel explaining the key difference.
+
+### Important content rule
+
+The generated content ideas should be INSPIRED by the video's concepts but should NOT copy the video's wording.
+
+The AI should:
+
+* extract concepts
+* identify interesting insights
+* find potential educational angles
+* transform them into original content ideas
+
+### AI prompt
+
+Use a strong system prompt along these lines:
+
+“You are an expert research assistant and content strategist.
+
+Analyze the provided YouTube transcript.
+
+Your job is to:
+
+1. Understand the actual concepts discussed.
+2. Produce accurate structured notes.
+3. Identify the most useful and interesting insights.
+4. Convert those insights into original content ideas.
+
+Do not invent information that is not supported by the transcript.
+Do not copy the creator's wording.
+Clearly distinguish between information stated in the video and your own content suggestions.
+
+Return structured output containing:
+summary,
+key_takeaways,
+structured_notes,
+content_ideas.
+
+For content_ideas, generate exactly 5 ideas. Each must contain:
+title,
+hook,
+format,
+explanation.”
+
+### Error handling
+
+Handle these cases gracefully:
+
+* Invalid YouTube URL
+* Video has no available transcript
+* Transcript cannot be retrieved
+* Very long transcript
+* AI API failure
+* Empty input
+
+Show clear user-friendly error messages rather than Python stack traces.
+
+For very long transcripts, intelligently truncate or chunk the transcript before sending it to the model. Do not blindly send an extremely long transcript in one request.
+
+### Security
+
+Never hard-code API keys.
+
+Use environment variables/secrets such as:
+
+AI_API_KEY
+
+If the selected AI provider requires a model name, make that configurable as well.
+
+Do not expose secrets in the frontend.
+
+Add a `.gitignore` containing:
+.env
+**pycache**/
+*.pyc
+
+### Code structure
+
+Prefer a clean structure such as:
+
+app.py
+services/
+youtube.py
+ai.py
+utils/
+helpers.py
+requirements.txt
+README.md
+
+Keep the implementation simple enough for a student developer to understand and explain in an interview.
+
+### README
+
+Create a README explaining:
+
+* What the project does
+* How the workflow works
+* Tech stack
+* How to run it
+* Required environment variables
+* Known limitations
+* Example usage
+
+### Important
+
+Before finishing:
+
+1. Test the app.
+2. Make sure the Streamlit app starts correctly.
+3. Make sure the YouTube URL validation works.
+4. Make sure errors are handled gracefully.
+5. Make sure the generated output is readable and visually polished.
+6. Do not add unnecessary features such as authentication, databases, payments, or user accounts.
+
+Keep the first version focused on one excellent workflow.
