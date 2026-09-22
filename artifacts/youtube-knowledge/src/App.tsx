@@ -1,4 +1,4 @@
-import { FormEvent, type ReactNode, useState } from 'react';
+import { FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -7,6 +7,7 @@ import NotFound from '@/pages/not-found';
 import {
   ArrowUpRight,
   BookOpenText,
+  Bookmark,
   Check,
   Clipboard,
   Clock3,
@@ -44,6 +45,33 @@ function Home() {
   const [formError, setFormError] = useState('');
   const [copied, setCopied] = useState('');
   const mutation = useAnalyzeYoutubeVideo();
+  const autoTriggeredRef = useRef(false);
+
+  useEffect(() => {
+    if (autoTriggeredRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    let targetUrl = params.get('url') || params.get('youtube_url') || '';
+    const videoId = params.get('v');
+
+    if (!targetUrl && videoId) {
+      targetUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    }
+
+    if (targetUrl) {
+      targetUrl = targetUrl.trim();
+      if (/youtube\.com|youtu\.be/i.test(targetUrl)) {
+        autoTriggeredRef.current = true;
+        setUrl(targetUrl);
+        setFormError('');
+        mutation.reset();
+        mutation.mutate(
+          { data: { url: targetUrl } },
+          { onSuccess: (response) => setAnalysis(response) },
+        );
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, []);
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -166,6 +194,8 @@ function Home() {
               </div>
             )}
           </form>
+
+          <BookmarkletWidget />
         </section>
 
         {analysis ? (
@@ -178,6 +208,75 @@ function Home() {
         <span className="font-mono uppercase tracking-[.16em]">YK / 001</span>
         <span>Make something of what you watch.</span>
       </footer>
+    </div>
+  );
+}
+
+function BookmarkletWidget() {
+  const [copied, setCopied] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
+  const bookmarkletCode = `javascript:(function(){var appUrl='${origin}';var ytUrl=encodeURIComponent(window.location.href);var w=window.open(appUrl+'/?url='+ytUrl,'_blank');if(!w||w.closed||typeof w.closed=='undefined'){location.href=appUrl+'/?url='+ytUrl;}})();`;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(bookmarkletCode);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2500);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <div className="mt-5 rounded-xl border border-accent/25 bg-accent/5 p-4 transition-all" data-testid="bookmarklet-widget">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/20 text-accent">
+            <Bookmark size={18} strokeWidth={2} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold text-foreground">1-Click YouTube Bookmarklet</p>
+              <span className="rounded-full bg-accent/20 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider text-accent">Automate</span>
+            </div>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Analyze any YouTube video in 1 click directly from your browser bookmarks!
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          <button
+            type="button"
+            data-testid="button-copy-bookmarklet"
+            onClick={handleCopy}
+            className="group flex h-9 items-center gap-1.5 rounded-lg bg-accent px-3.5 text-xs font-semibold text-accent-foreground shadow-sm transition-transform hover:-translate-y-0.5 active:translate-y-0"
+          >
+            {copied ? <Check size={14} className="text-accent-foreground" /> : <Sparkles size={14} />}
+            <span>{copied ? 'Bookmarklet Code Copied!' : 'Copy Bookmarklet Code'}</span>
+          </button>
+          <button
+            type="button"
+            data-testid="button-toggle-guide"
+            onClick={() => setShowGuide(!showGuide)}
+            className="flex h-9 items-center gap-1.5 rounded-lg border border-input bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            <span>{showGuide ? 'Hide Guide' : 'Setup Guide'}</span>
+          </button>
+        </div>
+      </div>
+
+      {(showGuide || copied) && (
+        <div className="mt-4 border-t border-accent/20 pt-3 text-xs text-muted-foreground animate-rise">
+          <p className="font-semibold text-foreground mb-2">⚡ 10-Second Setup Instructions:</p>
+          <ol className="list-decimal pl-4 space-y-1.5 text-xs leading-relaxed">
+            <li>Click <strong>Copy Bookmarklet Code</strong> above.</li>
+            <li>Right-click your browser&apos;s Bookmarks Bar (press <kbd className="px-1 py-0.5 rounded bg-muted font-mono text-[10px]">Ctrl+Shift+B</kbd> if hidden) and choose <strong>Add Page</strong> or <strong>Add Bookmark</strong>.</li>
+            <li>Set Name to <strong>Analyze in YK</strong> and paste the copied code into the <strong>URL / Location</strong> box. Click Save!</li>
+            <li>Now whenever you are watching a YouTube video, click your bookmark to analyze it instantly.</li>
+          </ol>
+        </div>
+      )}
     </div>
   );
 }
