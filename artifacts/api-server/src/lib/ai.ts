@@ -49,7 +49,7 @@ export async function generateAnalysis(
   }
 
   const prepared = prepareTranscript(transcript);
-  const model = process.env.GROQ_MODEL ?? "groq/compound-mini";
+  const model = process.env.GROQ_MODEL ?? "qwen/qwen3.8-27b";
 
   const systemPrompt = `You are an expert research assistant and content strategist.
 
